@@ -46,14 +46,5 @@ int main()
 	int klucz = 256;
 	printf("%x ",Sbox[9][10]);
 	getch();
-	/*
-	int a, b, c;
-	printf("dupa\n");
-	scanf("%d%d",&a,&b);
-	c=a+b;
-	printf("%d",c);
-	getch();
-	*/
-
 
 }
