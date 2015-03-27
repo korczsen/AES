@@ -47,4 +47,6 @@ int main()
 	printf("%x ",Sbox[9][10]);
 	getch();
 
+	//test
+
 }
