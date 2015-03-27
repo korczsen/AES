@@ -49,12 +49,7 @@ void SubBytes(unsigned char stan[4][4])
 	{
 		for(j=0 ; j<4 ; j++)
 		{
-			//printf("%x\n",stan[i][j]);
-			//printf("%d\n\n",stan[i][j]);
 			stan[i][j] = Sbox[stan[i][j]];
-			//printf("%x\n",stan[i][j]);
-			//printf("%d\n",stan[i][j]);
-			//system("pause");
 		}
 	}
 }
@@ -77,12 +72,14 @@ void ShiftRows()
 {	
 	unsigned char temp;
 
+	//w lewo o C1 (1 dla Ns = 4)
 	temp = stan[1][0];
 	stan[1][0] = stan[1][1];
 	stan[1][1] = stan[1][2];
 	stan[1][2] = stan[1][3];
 	stan[1][3] = temp;
 
+	//w lewo o C2 (2 dla Ns = 4)
 	temp = stan[2][0];
 	stan[2][0] = stan[2][2];
 	stan[2][2] = temp;
@@ -90,17 +87,45 @@ void ShiftRows()
 	stan[2][1] = stan[2][3];
 	stan[2][3] = temp;
 	
-
+	//w lewo o C3 (3 dla Ns = 4)
 	temp = stan[3][3];
 	stan[3][3] = stan[3][2];
 	stan[3][2] = stan[3][1];
 	stan[3][1] = stan[3][0];
 	stan[3][0] = temp;
-	WyswietlStan();
 }
+
 
 void MixColumns()
 {
+	int i;
+    unsigned char temp,x,t;
+
+    for(i=0;i<4;i++)
+    {    
+		//Suma modulo wszystkich elementow w kolumnie
+        temp = stan[0][i] ^ stan[1][i] ^ stan[2][i] ^ stan[3][i];
+	
+        x = stan[0][i] ^ stan[1][i];
+		x = ((x<<1) ^ (((x>>7) & 1) * 0x1b)); 
+		stan[0][i] = stan[0][i] ^ ( x ^ temp );
+
+        x = stan[1][i] ^ stan[2][i] ;
+		x = ((x<<1) ^ (((x>>7) & 1) * 0x1b));
+		stan[1][i] = stan[1][i] ^ ( x ^ temp );
+
+        x = stan[2][i] ^ stan[3][i];
+		x = ((x<<1) ^ (((x>>7) & 1) * 0x1b));
+		stan[2][i] = stan[2][i] ^ ( x ^ temp );
+
+        x = stan[3][i] ^ t;
+		x = ((x<<1) ^ (((x>>7) & 1) * 0x1b));
+		stan[3][i] = stan[3][i] ^ ( x ^ temp );
+
+		// Mnozenie przez wartosc(np 02) liczby której najstarszy bit=1
+		// moze byc zaimplementowane jako przesuniecie o 1 w lewo 
+		// oraz operacje XOR z wartoscia 00011011 (czyli 0x1b).
+    }
 }
 
 void AddRoundKey(int runda)
@@ -153,8 +178,9 @@ void Szyfruj()
 int main()
 {
 	int i;
-	// "Wesolych_swiat!!"
+	// Wiadomosc "Wesolych_swiat!!"
 	unsigned char wiadomosc[16] = {0x57, 0x65, 0x73, 0x6F, 0x6C, 0x79, 0x63, 0x68, 0x20, 0x73, 0x77, 0x69, 0x61, 0x74, 0x21, 0x21}; 
+   //unsigned char wiadomosc[16] = {0xd4, 0xbf, 0x5d, 0x30, 0xe0, 0xb4, 0x52, 0xae, 0xb8, 0x41, 0x11, 0xf1, 0x1e, 0x27, 0x98, 0xe5}; 
    
     while(Nr!=128 && Nr!=192 && Nr!=256)
     {
