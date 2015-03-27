@@ -59,8 +59,44 @@ void SubBytes(unsigned char stan[4][4])
 	}
 }
 
-void ShiftRows()
+void WyswietlStan()
 {
+	int i,j;
+	for(i=0 ; i<4 ; i++)
+	{
+		printf("\n");
+		for(j=0 ; j<4 ; j++)
+		{
+			printf("%x , ",stan[i][j]);
+		}
+	}
+	system("pause");
+}
+
+void ShiftRows()
+{	
+	unsigned char temp;
+
+	temp = stan[1][0];
+	stan[1][0] = stan[1][1];
+	stan[1][1] = stan[1][2];
+	stan[1][2] = stan[1][3];
+	stan[1][3] = temp;
+
+	temp = stan[2][0];
+	stan[2][0] = stan[2][2];
+	stan[2][2] = temp;
+	temp = stan[2][1];
+	stan[2][1] = stan[2][3];
+	stan[2][3] = temp;
+	
+
+	temp = stan[3][3];
+	stan[3][3] = stan[3][2];
+	stan[3][2] = stan[3][1];
+	stan[3][1] = stan[3][0];
+	stan[3][0] = temp;
+	WyswietlStan();
 }
 
 void MixColumns()
