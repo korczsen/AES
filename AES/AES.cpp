@@ -3,29 +3,21 @@
 #include<conio.h>
 #include<string.h>
 
-void SubBytes()
-{
-}
 
-void ShiftRows()
-{
-}
+// Wielkosc bloku w bitach/32
+int Nr=0;
+// Wielkosc klucza w bitach/32
+int Nk=0;
 
-void MixColumns()
-{
-}
+// in - tablica danych wejsciowych
+// out - tablica danych zaszyfrowanych
+// state - szyfr poœredni zwany stanem
+unsigned char in[16], out[16], state[4][4];
 
-void AddRoundKey()
-{
-}
+// Tablica przechowuj¹ca klucze rundy
+unsigned char RoundKey[240];
 
-
-
-
-int main()
-{
-	
-	char Sbox[16][16] = { //[nr_wiersza][nr_kol]
+int Sbox[16][16] = { //[nr_wiersza][nr_kol]
 		0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76,
 		0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0,0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0,
 		0xb7,0xfd,0x93,0x26,0x36,0x3f,0xf7,0xcc,0x34,0xa5,0xe5,0xf1,0x71,0xd8,0x31,0x15,
@@ -42,11 +34,71 @@ int main()
 		0x70,0x3e,0xb5,0x66,0x48,0x03,0xf6,0x0e,0x61,0x35,0x57,0xb9,0x86,0xc1,0x1d,0x9e,
 		0xe1,0xf8,0x98,0x11,0x69,0xd9,0x8e,0x94,0x9b,0x1e,0x87,0xe9,0xce,0x55,0x28,0xdf,
 		0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68,0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16};
-	char msg[] = "wiadomosc";
-	int klucz = 256;
-	printf("%x ",Sbox[9][10]);
+
+
+
+
+void SubBytes()
+{
+}
+
+void ShiftRows()
+{
+}
+
+void MixColumns()
+{
+}
+
+void AddRoundKey(int runda)
+{
+}
+
+// Funkcja rozpoczynaj¹ca szyfrowanie tablicy znaków in[]
+void Szyfruj()
+{
+    int i,j,runda=0;
+
+    //Transformacja tablicy znaków w macierz stanu
+    for(i=0;i<4;i++)
+    {
+        for(j=0;j<4;j++)
+        {
+            state[j][i] = in[i*4 + j];
+        }
+    }
+
+    // Dodanie pierwszego klucza rundy do stanu
+    AddRoundKey(0); 
+    
+    //Pierwsze Nr-1 rund
+    for(runda=1 ; runda<Nr ; runda++)
+    {
+        SubBytes();
+        ShiftRows();
+        MixColumns();
+        AddRoundKey(runda);
+    }
+    
+
+	//Ostatnia runda
+    SubBytes();
+    ShiftRows();
+    AddRoundKey(Nr);
+
+    //Kopiowanie zaszyfrowanego tekstu na wyjscie
+    for(i=0;i<4;i++)
+    {
+        for(j=0;j<4;j++)
+        {
+            out[i*4+j]=state[j][i];
+        }
+    }
+}
+
+
+int main()
+{
+	Szyfruj();
 	getch();
-
-	//test
-
 }
