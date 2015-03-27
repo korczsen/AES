@@ -12,12 +12,15 @@ int Nk=0;
 // in - tablica danych wejsciowych
 // out - tablica danych zaszyfrowanych
 // state - szyfr poœredni zwany stanem
-unsigned char in[16], out[16], state[4][4];
+unsigned char in[16], out[16], stan[4][4];
 
 // Tablica przechowuj¹ca klucze rundy
 unsigned char RoundKey[240];
 
-int Sbox[16][16] = { //[nr_wiersza][nr_kol]
+// Klucz wejsciowy do szyfrowania
+unsigned char Key[32];
+
+int Sbox[256] = { 
 		0x63,0x7c,0x77,0x7b,0xf2,0x6b,0x6f,0xc5,0x30,0x01,0x67,0x2b,0xfe,0xd7,0xab,0x76,
 		0xca,0x82,0xc9,0x7d,0xfa,0x59,0x47,0xf0,0xad,0xd4,0xa2,0xaf,0x9c,0xa4,0x72,0xc0,
 		0xb7,0xfd,0x93,0x26,0x36,0x3f,0xf7,0xcc,0x34,0xa5,0xe5,0xf1,0x71,0xd8,0x31,0x15,
@@ -35,11 +38,25 @@ int Sbox[16][16] = { //[nr_wiersza][nr_kol]
 		0xe1,0xf8,0x98,0x11,0x69,0xd9,0x8e,0x94,0x9b,0x1e,0x87,0xe9,0xce,0x55,0x28,0xdf,
 		0x8c,0xa1,0x89,0x0d,0xbf,0xe6,0x42,0x68,0x41,0x99,0x2d,0x0f,0xb0,0x54,0xbb,0x16};
 
-
-
-
-void SubBytes()
+void GenerujKlucz()
 {
+}
+
+void SubBytes(unsigned char stan[4][4])
+{
+	int i,j;
+	for(i=0 ; i<4 ; i++)
+	{
+		for(j=0 ; j<4 ; j++)
+		{
+			//printf("%x\n",stan[i][j]);
+			//printf("%d\n\n",stan[i][j]);
+			stan[i][j] = Sbox[stan[i][j]];
+			//printf("%x\n",stan[i][j]);
+			//printf("%d\n",stan[i][j]);
+			//system("pause");
+		}
+	}
 }
 
 void ShiftRows()
@@ -64,7 +81,7 @@ void Szyfruj()
     {
         for(j=0;j<4;j++)
         {
-            state[j][i] = in[i*4 + j];
+            stan[j][i] = in[i*4 + j];
         }
     }
 
@@ -74,7 +91,7 @@ void Szyfruj()
     //Pierwsze Nr-1 rund
     for(runda=1 ; runda<Nr ; runda++)
     {
-        SubBytes();
+        SubBytes(stan);
         ShiftRows();
         MixColumns();
         AddRoundKey(runda);
@@ -82,7 +99,7 @@ void Szyfruj()
     
 
 	//Ostatnia runda
-    SubBytes();
+    SubBytes(stan);
     ShiftRows();
     AddRoundKey(Nr);
 
@@ -91,7 +108,7 @@ void Szyfruj()
     {
         for(j=0;j<4;j++)
         {
-            out[i*4+j]=state[j][i];
+            out[i*4+j]=stan[j][i];
         }
     }
 }
@@ -99,6 +116,25 @@ void Szyfruj()
 
 int main()
 {
+	int i;
+	// "Wesolych_swiat!!"
+	unsigned char wiadomosc[16] = {0x57, 0x65, 0x73, 0x6F, 0x6C, 0x79, 0x63, 0x68, 0x20, 0x73, 0x77, 0x69, 0x61, 0x74, 0x21, 0x21}; 
+   
+    while(Nr!=128 && Nr!=192 && Nr!=256)
+    {
+        printf("Wybierz dlugosc klucza:(128, 192 lub 256): ");
+        scanf("%d",&Nr);
+    }
+    
+    // obliczenie Nk i Nr
+    Nk = Nr / 32;
+    Nr = Nk + 6;
+
+	for(i=0 ; i < Nk*4 ; i++)
+	{
+		in[i] = wiadomosc[i];
+	}
+	GenerujKlucz();
 	Szyfruj();
 	getch();
 }
