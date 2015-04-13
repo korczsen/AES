@@ -14,7 +14,7 @@ int Nk=0;
 // in - tablica danych wejsciowych
 // out - tablica danych zaszyfrowanych
 // state - szyfr poœredni zwany stanem
-unsigned char in[16], out[16], stan[4][4];
+unsigned char in[16], out[16], stan[4][4], inde[16], outde[16];
 
 // Tablica przechowuj¹ca klucze rundy
 unsigned char RoundKey[240];
@@ -152,7 +152,7 @@ void GenerujKlucz()
 	{
 		for(j=0; j<4; j++)
 		{
-			temp[j] = RoundKey[(i-4) * 4 + j];
+			temp[j] = RoundKey[(i-1) * 4 + j];
 		}
 		if(i % Nk == 0)
 		{
@@ -192,26 +192,26 @@ void GenerujKlucz()
 	}
 }
 //=============================================================================================================================
-void SubBytes(unsigned char stan[4][4])
+void SubBytes()
 {
 	int i,j;
 	for(i=0 ; i<4 ; i++)
 	{
 		for(j=0 ; j<4 ; j++)
 		{
-			stan[i][j] = Sbox[stan[i][j]];
+			stan[i][j] = PobierzWartSBox(stan[i][j]);
 		}
 	}
 }
 //------------------------------------------------------------------------
-void invSubBytes(unsigned char stan[4][4])
+void invSubBytes()
 {
 	int i,j;
 	for(i=0 ; i<4 ; i++)
 	{
 		for(j=0 ; j<4 ; j++)
 		{
-			stan[i][j] = invSbox[stan[i][j]];
+			stan[i][j] = PobierzWartinvSBox(stan[i][j]);
 		}
 	}
 }
@@ -413,16 +413,14 @@ void Szyfruj()
     //Pierwsze Nr-1 rund
     for(runda=1 ; runda<Nr ; runda++)
     {
-		
-        SubBytes(stan);
+        SubBytes();
         ShiftRows();
         MixColumns();
         AddRoundKey(runda);
     }
-    
 
 	//Ostatnia runda
-    SubBytes(stan);
+    SubBytes();
     ShiftRows();
     AddRoundKey(Nr);
 
@@ -434,6 +432,40 @@ void Szyfruj()
             out[i*4+j]=stan[j][i];
         }
     }
+}
+
+void Deszyfruj()
+{
+	int i,j,round=0;
+	//Kopiowanie zaszyfrowanego tekstu do tablicy stanów
+	for(i=0; i<4; i++)
+	{
+		for(j=0; j<4; j++)
+		{
+			stan[j][i] = inde[i*4+j];
+		}
+	}
+	//Dodanie pierwszego klucza rundy
+	AddRoundKey(Nr);
+	for(round = Nr-1; round>0; round--)
+	{
+		invShiftRows();
+		invSubBytes();
+		invShiftRows();
+		invMixColumns();
+	}
+	//Ostatnia runda
+	invShiftRows();
+	invSubBytes();
+	AddRoundKey(0);
+	//Kopiowanie wyniku do macierzy wyjœciowej
+	for(i=0; i<4; i++)
+	{
+		for(j=0; j<4; j++)
+		{
+			outde[i*4+j] = stan[j][i];
+		}
+	}
 }
 
 //=============================================================================================================================
@@ -455,13 +487,13 @@ void WyswietlStan()
 //=============================================================================================================================
 int main()
 {
-	int i;
+	int i, j;
 	// Wiadomosc "Wesolych_swiat!!"
 	unsigned char wiadomosc[16] = {0x57, 0x65, 0x73, 0x6F, 0x6C, 0x79, 0x63, 0x68, 0x20, 0x73, 0x77, 0x69, 0x61, 0x74, 0x21, 0x21}; 
     //unsigned char wiadomosc[16] = {0x19, 0x3d, 0xe3, 0xbe, 0xa0, 0xf4, 0xe2, 0x2b, 0x9a, 0xc6, 0x8d, 0x2a, 0xe9, 0xf8, 0x48, 0x08};
 	//temp - klucz
 	unsigned char temp[16] = {0x00  ,0x01  ,0x02  ,0x03  ,0x04  ,0x05  ,0x06  ,0x07  ,0x08  ,0x09  ,0x0a  ,0x0b  ,0x0c  ,0x0d  ,0x0e  ,0x0f};
-   
+	
     while(Nr!=128 && Nr!=192 && Nr!=256)
     {
         printf("Wybierz dlugosc klucza:(128, 192 lub 256): ");
@@ -479,11 +511,24 @@ int main()
 	}
 	GenerujKlucz();
 	Szyfruj();
-	printf("Szyfrujemy: Wesolych Swiat!!\n");
+	printf("Szyfrujemy: Wesolych Swiat!! 0x57, 0x65, 0x73, 0x6F, 0x6C, 0x79, 0x63, 0x68, 0x20, 0x73, 0x77, 0x69, 0x61, 0x74, 0x21, 0x21\n");
 	printf("Tekst po szyfryzacji: \n");
 	for(i=0; i<Nk*4; i++)
 	{
 		printf("%02x",out[i]);
 	}	
+	printf("\n");
+	printf("Tekst po deszyfryzacji:  ");
+	for(i=0 ; i < Nk*4 ; i++)
+	{
+		inde[i] = out[i];
+		Key[i] = temp[i];
+	}
+	GenerujKlucz();
+	Deszyfruj();
+	for(i=0; i<Nk*4; i++)
+	{
+		printf("%02x ",outde[i]);
+	}
 	getch();
 }
